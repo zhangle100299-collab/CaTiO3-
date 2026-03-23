@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>钙钛矿(CaTiO₃)晶体结构 - 三视图显示</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #e0e0e0 0%, #c0c0c0 100%);
+            color: #333333;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #4361ee;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #4361ee, #7209b7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #3a5a8c;
+            margin-bottom: 20px;
+        }
+        
+        .triple-view-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .view-section {
+            flex: 1;
+            min-width: 580px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid #cccccc;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .view-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+        
+        .section-title {
+            font-size: 1.6rem;
+            color: #4361ee;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #cccccc;
+        }
+        
+        .canvas-container {
+            width: 100%;
+            height: 400px;
+            border-radius: 10px;
+            background: #f5f5f5; /* 临时背景，实际由Three.js设置 */
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 12px;
+        }
+        
+        .info-panel {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(240, 240, 240, 0.9);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            border-left: 4px solid #4361ee;
+        }
+        
+        .info-panel h3 {
+            color: #4361ee;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .info-panel ul {
+            padding-left: 18px;
+            margin-top: 8px;
+        }
+        
+        .info-panel li {
+            margin-bottom: 6px;
+            line-height: 1.5;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(240, 240, 240, 0.9);
+            border-radius: 10px;
+        }
+        
+        .control-group {
+            flex: 1;
+            min-width: 180px;
+        }
+        
+        .control-title {
+            font-size: 1rem;
+            color: #333333;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+        
+        button {
+            background: linear-gradient(90deg, #4361ee, #3a0ca3);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-right: 6px;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            background: linear-gradient(90deg, #3a0ca3, #4361ee);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .highlight-btn {
+            background: linear-gradient(90deg, #f72585, #b5179e);
+            border: 1px solid rgba(247, 37, 133, 0.5);
+        }
+        
+        .highlight-btn:hover {
+            background: linear-gradient(90deg, #b5179e, #f72585);
+        }
+        
+        .toggle-btn {
+            background: linear-gradient(90deg, #7209b7, #560bad);
+        }
+        
+        .toggle-btn:hover {
+            background: linear-gradient(90deg, #560bad, #7209b7);
+        }
+        
+        .octahedron-btn {
+            background: linear-gradient(90deg, #4cc9f0, #3a8bb5);
+        }
+        
+        .octahedron-btn:hover {
+            background: linear-gradient(90deg, #3a8bb5, #4cc9f0);
+        }
+        
+        .ion-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+            font-size: 0.85rem;
+        }
+        
+        .ion-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .ion-color {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .ion-label {
+            font-weight: 600;
+        }
+        
+        .visualization-note {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(247, 37, 133, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #f72585;
+            font-size: 0.85rem;
+            color: #333333;
+        }
+        
+        .enhancement-note {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(76, 201, 240, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #4cc9f0;
+            font-size: 0.85rem;
+            color: #333333;
+        }
+        
+        .structure-explanation {
+            margin-top: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid #cccccc;
+        }
+        
+        .explanation-content {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .explanation-text {
+            flex: 2;
+            min-width: 300px;
+        }
+        
+        .explanation-text h3 {
+            color: #4361ee;
+            margin-bottom: 15px;
+        }
+        
+        .explanation-text p {
+            margin-bottom: 15px;
+            line-height: 1.7;
+        }
+        
+        .comparison-table {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(240, 240, 240, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .comparison-table h4 {
+            color: #333333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        
+        th {
+            background: rgba(67, 97, 238, 0.1);
+            color: #333333;
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #cccccc;
+        }
+        
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #cccccc;
+        }
+        
+        tr:hover {
+            background: rgba(76, 201, 240, 0.1);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #cccccc;
+            color: #666666;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 1800px) {
+            .view-section {
+                min-width: 100%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .canvas-container {
+                height: 350px;
+            }
+            
+            .triple-view-container {
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>钙钛矿(CaTiO₃)晶体结构</h1>
+            <p class="subtitle">三视图显示：标准取法 | Ca²⁺配位取法 | 增强[TiO₆]八面体连接图（浅色背景）</p>
+        </header>
+        
+        <div class="triple-view-container">
+            <!-- 视图1：标准取法 -->
+            <section class="view-section">
+                <h2 class="section-title">标准取法：Ti⁴⁺在体心</h2>
+                <div id="standard-canvas" class="canvas-container"></div>
+                
+                <div class="info-panel">
+                    <h3>标准取法特点</h3>
+                    <ul>
+                        <li><strong>Ti⁴⁺位置</strong>：位于晶胞体心</li>
+                        <li><strong>Ca²⁺位置</strong>：位于晶胞顶点</li>
+                        <li><strong>O²⁻位置</strong>：位于面心（6个位置）</li>
+                        <li><strong>突出显示</strong>：[TiO₆]八面体结构</li>
+                    </ul>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <div class="control-title">标准取法控制</div>
+                        <button id="std-toggle-octahedra" class="highlight-btn">显示[TiO₆]八面体</button>
+                        <button id="std-toggle-ti-o-bonds">显示Ti-O键</button>
+                        <button id="std-toggle-ca-ions">显示Ca²⁺</button>
+                    </div>
+                </div>
+                
+                <div class="ion-legend">
+                    <div class="ion-item">
+                        <div class="ion-color" style="background-color: #4cc9f0;"></div>
+                        <div class="ion-label">Ca²⁺</div>
+                    </div>
+                    <div class="ion-item">
+                        <div class="ion-color" style="background-color: #f72585;"></div>
+                        <div class="ion-label">Ti⁴⁺</div>
+                    </div>
+                    <div class="ion-item">
+                        <div class="ion-color" style="background-color: #90be6d;"></div>
+                        <div class="ion-label">O²⁻</div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 视图2：Ca²⁺配位取法 -->
+            <section class="view-section">
+                <h2 class="section-title">Ca²⁺配位取法</h2>
+                <div id="ca-canvas" class="canvas-container"></div>
+                
+                <div class="info-panel">
+                    <h3>Ca²⁺取法特点</h3>
+                    <ul>
+                        <li><strong>Ca²⁺位置</strong>：位于晶胞体心</li>
+                        <li><strong>Ti⁴⁺位置</strong>：位于晶胞顶点</li>
+                        <li><strong>O²⁻位置</strong>：位于棱心（12条棱中点）</li>
+                        <li><strong>突出显示</strong>：Ca²⁺的12配位环境</li>
+                    </ul>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <div class="control-title">Ca²⁺取法控制</div>
+                        <button id="ca-toggle-ca-o-bonds" class="toggle-btn">显示Ca-O键</button>
+                        <button id="ca-toggle-ca-polyhedron">显示Ca配位体</button>
+                        <button id="ca-toggle-ti-ions">显示Ti⁴⁺</button>
+                    </div>
+                </div>
+                
+                <div class="ion-legend">
+                    <div class="ion-item">
+                        <div class="ion-color" style="background-color: #4cc9f0;"></div>
+                        <div class="ion-label">Ca²⁺</div>
+                    </div>
+                    <div class="ion-item">
+                        <div class="ion-color" style="background-color: #f72585;"></div>
+                        <div class="ion-label">Ti⁴⁺</div>
+                    </div>
+                    <div class="ion-item">
+                        <div class="ion-color" style="background-color: #90be6d;"></div>
+                        <div class="ion-label">O²⁻</div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 视图3：[TiO₆]八面体连接图（增强版） -->
+            <section class="view-section">
+                <h2 class="section-title">增强[TiO₆]八面体连接图</h2>
+                <div id="octahedron-canvas" class="canvas-container"></div>
+                
+                <div class="enhancement-note">
+                    <strong>增强功能：</strong>多八面体显示时，包含所有Ti⁴⁺和O²⁻离子，完整展示八面体连接网络。
+                </div>
+                
+                <div class="info-panel">
+                    <h3>八面体连接特征</h3>
+                    <ul>
+                        <li><strong>配位结构</strong>：每个Ti⁴⁺被6个O²⁻包围形成[TiO₆]八面体</li>
+                        <li><strong>连接方式</strong>：[TiO₆]八面体通过共顶(O²⁻)连接</li>
+                        <li><strong>网络结构</strong>：八面体连接形成三维骨架结构</li>
+                        <li><strong>增强显示</strong>：多八面体包含所有离子，展示完整连接关系</li>
+                    </ul>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <div class="control-title">八面体连接控制</div>
+                        <button id="oct-toggle-octahedra" class="octahedron-btn">显示八面体</button>
+                        <button id="oct-toggle-connections">显示连接网络</button>
+                        <button id="oct-toggle-multiple">显示多八面体</button>
+                        <button id="oct-toggle-all-ions">显示全部离子</button>
+                    </div>
+                </div>
+                
+                <div class="ion-legend">
+                    <div class="ion-item">
+                        <div class="ion-color" style="background-color: #f72585;"></div>
+                        <div class="ion-label">Ti⁴⁺ (中心)</div>
+                    </div>
+                    <div class="ion-item">
+                        <div class="ion-color" style="background-color: #ff6b9d;"></div>
+                        <div class="ion-label">Ti⁴⁺ (周围)</div>
+                    </div>
+                    <div class="ion-item">
+                        <div class="ion-color" style="background-color: #90be6d;"></div>
+                        <div class="ion-label">O²⁻ (共享)</div>
+                    </div>
+                    <div class="ion-item">
+                        <div class="ion-color" style="background-color: rgba(114, 9, 183, 0.3); border: 1px dashed #7209b7;"></div>
+                        <div class="ion-label">八面体</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <section class="structure-explanation">
+            <div class="explanation-content">
+                <div class="explanation-text">
+                    <h3>钙钛矿结构的三视图分析</h3>
+                    <p>通过三个互补的视图，可以全面理解钙钛矿(CaTiO₃)的晶体结构：</p>
+                    
+                    <p><strong>1. 标准取法视图</strong>：显示Ti⁴⁺在体心，突出[TiO₆]八面体作为基本结构单元。</p>
+                    
+                    <p><strong>2. Ca²⁺配位取法视图</strong>：显示Ca²⁺在体心，突出Ca²⁺的12配位立方八面体环境。</p>
+                    
+                    <p><strong>3. 增强[TiO₆]八面体连接视图</strong>：专门展示八面体的三维连接网络，<strong>多八面体显示包含所有Ti⁴⁺和O²⁻离子</strong>，完整展示八面体如何通过共享O²⁻顶点形成三维骨架。</p>
+                    
+                    <p><strong>结构关系</strong>：这三种表示方式从不同角度描述同一晶体结构：[TiO₆]八面体构成三维骨架，Ca²⁺填充在八面体网络的大空隙中。</p>
+                    
+                    <p><strong>教学价值</strong>：增强的多八面体显示让学生更清晰地看到八面体之间的连接关系，特别是共享的O²⁻顶点如何将多个八面体连接成连续网络。</p>
+                </div>
+                
+                <div class="comparison-table">
+                    <h4>三视图功能对比</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>视图</th>
+                                <th>重点展示</th>
+                                <th>增强功能</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>标准取法</td>
+                                <td>[TiO₆]八面体单元</td>
+                                <td>单个八面体结构</td>
+                            </tr>
+                            <tr>
+                                <td>Ca²⁺取法</td>
+                                <td>Ca²⁺配位环境</td>
+                                <td>离子填充关系</td>
+                            </tr>
+                            <tr>
+                                <td>八面体连接</td>
+                                <td>三维连接网络</td>
+                                <td><strong>多八面体+所有离子</strong></td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="text-align: center; background: rgba(76, 201, 240, 0.1);">
+                                    <strong>综合理解：</strong>八面体骨架 + 离子填充 = 完整晶体结构
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        
+        <footer>
+            <p>材料科学基础 - 钙钛矿晶体结构可视化 | 三视图显示系统 | 浅色背景版</p>
+            <p>使用Three.js构建 | 基于立方晶系Pm-3m空间群理想结构</p>
+        </footer>
+    </div>
+
+    <script>
+        // 全局配置
+        const ionRadii = {
+            Ca: 1.12,
+            Ti: 0.61,
+            O: 1.40
+        };
+        
+        const colors = {
+            Ca: 0x4cc9f0,
+            Ti: 0xf72585,
+            TiSurrounding: 0xff6b9d, // 周围Ti⁴⁺颜色
+            O: 0x90be6d,
+            octahedronFace: 0x7209b7,
+            octahedronEdge: 0x9d4edd,
+            tiOBond: 0xffffff,
+            caPolyhedronFace: 0x4cc9f0,
+            caPolyhedronEdge: 0x90e0ef,
+            caOBond: 0xffffff,
+            unitCellEdge: 0x4cc9f0,
+            connectionNetwork: 0xcccccc
+        };
+        
+        const latticeConstant = 3.85;
+        const halfSize = latticeConstant / 2;
+        
+        // ========== 视图1：标准取法（Ti⁴⁺在体心） ==========
+        let stdScene, stdCamera, stdRenderer, stdControls;
+        let stdOctahedraVisible = true;
+        let stdTiOBondsVisible = true;
+        let stdCaIonsVisible = true;
+        let stdAutoRotate = true;
+        
+        function initStandardView() {
+            const container = document.getElementById('standard-canvas');
+            
+            stdScene = new THREE.Scene();
+            // 修改为浅色背景
+            stdScene.background = new THREE.Color(0xf5f5f5);
+            
+            stdCamera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+            stdCamera.position.set(10, 8, 10);
+            
+            stdRenderer = new THREE.WebGLRenderer({ antialias: true });
+            stdRenderer.setSize(container.clientWidth, container.clientHeight);
+            stdRenderer.shadowMap.enabled = true;
+            stdRenderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(stdRenderer.domElement);
+            
+            stdControls = new THREE.OrbitControls(stdCamera, stdRenderer.domElement);
+            stdControls.autoRotate = stdAutoRotate;
+            stdControls.autoRotateSpeed = 1.0;
+            stdControls.enableDamping = true;
+            stdControls.dampingFactor = 0.05;
+            
+            // 光源
+            addLights(stdScene);
+            
+            // 创建晶胞边界
+            createUnitCell(stdScene, colors.unitCellEdge, 0.15);
+            
+            // 创建离子（标准取法）
+            createStandardIons(stdScene);
+            
+            // 创建[TiO₆]八面体
+            createStandardTiO6Octahedron(stdScene);
+            
+            // 创建Ti-O键
+            createStandardTiOBonds(stdScene);
+            
+            // 设置控制按钮事件
+            setupStandardControls();
+            
+            // 动画循环
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                if (window.stdOctahedronFaces && window.stdOctahedronFaces.visible) {
+                    window.stdOctahedronFaces.material.opacity = 0.15 + 0.05 * Math.sin(Date.now() * 0.001);
+                }
+                
+                stdControls.update();
+                stdRenderer.render(stdScene, stdCamera);
+            }
+            animate();
+            
+            // 窗口大小变化响应
+            window.addEventListener('resize', function() {
+                stdCamera.aspect = container.clientWidth / container.clientHeight;
+                stdCamera.updateProjectionMatrix();
+                stdRenderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+        
+        function createStandardIons(scene) {
+            // Ti⁴⁺在体心
+            const tiGeometry = new THREE.SphereGeometry(ionRadii.Ti * 0.35, 24, 24);
+            const tiMaterial = new THREE.MeshPhongMaterial({ 
+                color: colors.Ti, 
+                shininess: 120
+            });
+            const tiIon = new THREE.Mesh(tiGeometry, tiMaterial);
+            tiIon.position.set(0, 0, 0);
+            scene.add(tiIon);
+            
+            // O²⁻在面心（6个位置）
+            const oGeometry = new THREE.SphereGeometry(ionRadii.O * 0.18, 24, 24);
+            const oMaterial = new THREE.MeshPhongMaterial({ 
+                color: colors.O, 
+                shininess: 100
+            });
+            
+            const oPositions = [
+                [0.5, 0.5, 0], [0.5, 0.5, 1],
+                [0.5, 0, 0.5], [0.5, 1, 0.5],
+                [0, 0.5, 0.5], [1, 0.5, 0.5]
+            ];
+            
+            oPositions.forEach(pos => {
+                const oIon = new THREE.Mesh(oGeometry, oMaterial);
+                oIon.position.set(
+                    (pos[0] - 0.5) * latticeConstant,
+                    (pos[1] - 0.5) * latticeConstant,
+                    (pos[2] - 0.5) * latticeConstant
+                );
+                scene.add(oIon);
+            });
+            
+            // Ca²⁺在顶点（8个位置）
+            const caGeometry = new THREE.SphereGeometry(ionRadii.Ca * 0.2, 24, 24);
+            const caMaterial = new THREE.MeshPhongMaterial({ 
+                color: colors.Ca, 
+                shininess: 80,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            const caPositions = [
+                [0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0],
+                [0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 1]
+            ];
+            
+            window.stdCaIons = [];
+            caPositions.forEach(pos => {
+                const caIon = new THREE.Mesh(caGeometry, caMaterial);
+                caIon.position.set(
+                    (pos[0] - 0.5) * latticeConstant,
+                    (pos[1] - 0.5) * latticeConstant,
+                    (pos[2] - 0.5) * latticeConstant
+                );
+                scene.add(caIon);
+                window.stdCaIons.push(caIon);
+            });
+        }
+        
+        function createStandardTiO6Octahedron(scene) {
+            const oxygenPositions = [
+                [0, 0, halfSize],
+                [0, 0, -halfSize],
+                [0, halfSize, 0],
+                [0, -halfSize, 0],
+                [halfSize, 0, 0],
+                [-halfSize, 0, 0]
+            ];
+            
+            // 八面体面
+            const faceGeometry = new THREE.BufferGeometry();
+            const faceVertices = [];
+            
+            const facesIndices = [
+                [0, 2, 4], [0, 4, 3], [0, 3, 5], [0, 5, 2],
+                [1, 4, 2], [1, 2, 5], [1, 5, 3], [1, 3, 4]
+            ];
+            
+            facesIndices.forEach(face => {
+                face.forEach(vertexIndex => {
+                    const vertex = oxygenPositions[vertexIndex];
+                    faceVertices.push(vertex[0], vertex[1], vertex[2]);
+                });
+            });
+            
+            faceGeometry.setAttribute('position', new THREE.Float32BufferAttribute(faceVertices, 3));
+            faceGeometry.computeVertexNormals();
+            
+            const faceMaterial = new THREE.MeshPhongMaterial({
+                color: colors.octahedronFace,
+                transparent: true,
+                opacity: 0.2,
+                side: THREE.DoubleSide,
+                shininess: 20
+            });
+            
+            window.stdOctahedronFaces = new THREE.Mesh(faceGeometry, faceMaterial);
+            window.stdOctahedronFaces.visible = stdOctahedraVisible;
+            scene.add(window.stdOctahedronFaces);
+            
+            // 八面体边
+            const edgeGeometry = new THREE.BufferGeometry();
+            const edgeVertices = [];
+            
+            const edges = [
+                [0, 2], [0, 4], [0, 3], [0, 5],
+                [1, 2], [1, 4], [1, 3], [1, 5],
+                [2, 4], [4, 3], [3, 5], [5, 2]
+            ];
+            
+            edges.forEach(edge => {
+                const startIndex = edge[0];
+                const endIndex = edge[1];
+                
+                const startPos = new THREE.Vector3(
+                    oxygenPositions[startIndex][0],
+                    oxygenPositions[startIndex][1],
+                    oxygenPositions[startIndex][2]
+                );
+                const endPos = new THREE.Vector3(
+                    oxygenPositions[endIndex][0],
+                    oxygenPositions[endIndex][1],
+                    oxygenPositions[endIndex][2]
+                );
+                
+                const direction = new THREE.Vector3().subVectors(endPos, startPos).normalize();
+                const oxygenRadius = ionRadii.O * 0.18;
+                const adjustedStart = startPos.clone().add(direction.clone().multiplyScalar(oxygenRadius * 0.9));
+                const adjustedEnd = endPos.clone().sub(direction.clone().multiplyScalar(oxygenRadius * 0.9));
+                
+                edgeVertices.push(
+                    adjustedStart.x, adjustedStart.y, adjustedStart.z,
+                    adjustedEnd.x, adjustedEnd.y, adjustedEnd.z
+                );
+            });
+            
+            edgeGeometry.setAttribute('position', new THREE.Float32BufferAttribute(edgeVertices, 3));
+            
+            const edgeMaterial = new THREE.LineBasicMaterial({
+                color: colors.octahedronEdge,
+                linewidth: 2,
+                transparent: true,
+                opacity: 0.7
+            });
+            
+            window.stdOctahedronEdges = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+            window.stdOctahedronEdges.visible = stdOctahedraVisible;
+            scene.add(window.stdOctahedronEdges);
+        }
+        
+        function createStandardTiOBonds(scene) {
+            const tiPosition = new THREE.Vector3(0, 0, 0);
+            
+            const oxygenPositions = [
+                new THREE.Vector3(0, 0, halfSize),
+                new THREE.Vector3(0, 0, -halfSize),
+                new THREE.Vector3(0, halfSize, 0),
+                new THREE.Vector3(0, -halfSize, 0),
+                new THREE.Vector3(halfSize, 0, 0),
+                new THREE.Vector3(-halfSize, 0, 0)
+            ];
+            
+            const bondGroup = new THREE.Group();
+            
+            oxygenPositions.forEach(oPos => {
+                const direction = new THREE.Vector3().subVectors(oPos, tiPosition);
+                const distance = direction.length();
+                
+                const cylinderGeometry = new THREE.CylinderGeometry(0.04, 0.04, distance, 8);
+                const cylinderMaterial = new THREE.MeshPhongMaterial({
+                    color: colors.tiOBond,
+                    transparent: true,
+                    opacity: 0.3,
+                    shininess: 30
+                });
+                
+                const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+                cylinder.position.copy(tiPosition.clone().add(oPos).multiplyScalar(0.5));
+                
+                const axis = new THREE.Vector3(0, 1, 0);
+                const quaternion = new THREE.Quaternion();
+                quaternion.setFromUnitVectors(axis, direction.clone().normalize());
+                cylinder.quaternion.copy(quaternion);
+                
+                bondGroup.add(cylinder);
+            });
+            
+            bondGroup.visible = stdTiOBondsVisible;
+            scene.add(bondGroup);
+            window.stdTiOBonds = bondGroup;
+        }
+        
+        // ========== 视图2：Ca²⁺配位取法（Ca²⁺在体心） ==========
+        let caScene, caCamera, caRenderer, caControls;
+        let caCaOBondsVisible = false;
+        let caPolyhedronVisible = false;
+        let caTiIonsVisible = true;
+        let caAutoRotate = true;
+        
+        function initCaView() {
+            const container = document.getElementById('ca-canvas');
+            
+            caScene = new THREE.Scene();
+            // 修改为浅色背景
+            caScene.background = new THREE.Color(0xf5f5f5);
+            
+            caCamera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+            caCamera.position.set(10, 8, 10);
+            
+            caRenderer = new THREE.WebGLRenderer({ antialias: true });
+            caRenderer.setSize(container.clientWidth, container.clientHeight);
+            caRenderer.shadowMap.enabled = true;
+            caRenderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(caRenderer.domElement);
+            
+            caControls = new THREE.OrbitControls(caCamera, caRenderer.domElement);
+            caControls.autoRotate = caAutoRotate;
+            caControls.autoRotateSpeed = 1.0;
+            caControls.enableDamping = true;
+            caControls.dampingFactor = 0.05;
+            
+            addLights(caScene);
+            createUnitCell(caScene, colors.unitCellEdge, 0.15);
+            createCaViewIons(caScene);
+            createCaOBonds(caScene);
+            createCaPolyhedron(caScene);
+            setupCaControls();
+            
+            function animate() {
+                requestAnimationFrame(animate);
+                if (window.caPolyhedron && window.caPolyhedron.visible) {
+                    window.caPolyhedron.material.opacity = 0.15 + 0.05 * Math.sin(Date.now() * 0.001);
+                }
+                caControls.update();
+                caRenderer.render(caScene, caCamera);
+            }
+            animate();
+            
+            window.addEventListener('resize', function() {
+                caCamera.aspect = container.clientWidth / container.clientHeight;
+                caCamera.updateProjectionMatrix();
+                caRenderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+        
+        function createCaViewIons(scene) {
+            // Ca²⁺在体心
+            const caGeometry = new THREE.SphereGeometry(ionRadii.Ca * 0.35, 24, 24);
+            const caMaterial = new THREE.MeshPhongMaterial({ color: colors.Ca, shininess: 120 });
+            const caIon = new THREE.Mesh(caGeometry, caMaterial);
+            caIon.position.set(0, 0, 0);
+            scene.add(caIon);
+            
+            // O²⁻在棱心（12条棱的中点）
+            const oGeometry = new THREE.SphereGeometry(ionRadii.O * 0.18, 24, 24);
+            const oMaterial = new THREE.MeshPhongMaterial({ color: colors.O, shininess: 100 });
+            
+            const oPositions = [
+                [0.5, 0, 0], [0.5, 0, 1], [0.5, 1, 0], [0.5, 1, 1],
+                [0, 0.5, 0], [0, 0.5, 1], [1, 0.5, 0], [1, 0.5, 1],
+                [0, 0, 0.5], [1, 0, 0.5], [0, 1, 0.5], [1, 1, 0.5]
+            ];
+            
+            oPositions.forEach(pos => {
+                const oIon = new THREE.Mesh(oGeometry, oMaterial);
+                oIon.position.set(
+                    (pos[0] - 0.5) * latticeConstant,
+                    (pos[1] - 0.5) * latticeConstant,
+                    (pos[2] - 0.5) * latticeConstant
+                );
+                scene.add(oIon);
+            });
+            
+            // Ti⁴⁺在顶点（8个位置）
+            const tiGeometry = new THREE.SphereGeometry(ionRadii.Ti * 0.25, 24, 24);
+            const tiMaterial = new THREE.MeshPhongMaterial({ 
+                color: colors.Ti, 
+                shininess: 100,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            const tiPositions = [
+                [0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0],
+                [0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 1]
+            ];
+            
+            window.caTiIons = [];
+            tiPositions.forEach(pos => {
+                const tiIon = new THREE.Mesh(tiGeometry, tiMaterial);
+                tiIon.position.set(
+                    (pos[0] - 0.5) * latticeConstant,
+                    (pos[1] - 0.5) * latticeConstant,
+                    (pos[2] - 0.5) * latticeConstant
+                );
+                scene.add(tiIon);
+                window.caTiIons.push(tiIon);
+            });
+        }
+        
+        function createCaOBonds(scene) {
+            const caPosition = new THREE.Vector3(0, 0, 0);
+            
+            const oxygenPositions = [
+                new THREE.Vector3(halfSize, 0, 0),
+                new THREE.Vector3(halfSize, 0, latticeConstant),
+                new THREE.Vector3(halfSize, latticeConstant, 0),
+                new THREE.Vector3(halfSize, latticeConstant, latticeConstant),
+                new THREE.Vector3(0, halfSize, 0),
+                new THREE.Vector3(0, halfSize, latticeConstant),
+                new THREE.Vector3(latticeConstant, halfSize, 0),
+                new THREE.Vector3(latticeConstant, halfSize, latticeConstant),
+                new THREE.Vector3(0, 0, halfSize),
+                new THREE.Vector3(latticeConstant, 0, halfSize),
+                new THREE.Vector3(0, latticeConstant, halfSize),
+                new THREE.Vector3(latticeConstant, latticeConstant, halfSize)
+            ].map(v => v.sub(new THREE.Vector3(halfSize, halfSize, halfSize)));
+            
+            const bondGroup = new THREE.Group();
+            
+            oxygenPositions.forEach(oPos => {
+                const direction = new THREE.Vector3().subVectors(oPos, caPosition);
+                const distance = direction.length();
+                
+                const cylinderGeometry = new THREE.CylinderGeometry(0.03, 0.03, distance, 6);
+                const cylinderMaterial = new THREE.MeshPhongMaterial({
+                    color: colors.caOBond,
+                    transparent: true,
+                    opacity: 0.2,
+                    shininess: 30
+                });
+                
+                const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+                cylinder.position.copy(caPosition.clone().add(oPos).multiplyScalar(0.5));
+                
+                const axis = new THREE.Vector3(0, 1, 0);
+                const quaternion = new THREE.Quaternion();
+                quaternion.setFromUnitVectors(axis, direction.clone().normalize());
+                cylinder.quaternion.copy(quaternion);
+                
+                bondGroup.add(cylinder);
+            });
+            
+            bondGroup.visible = caCaOBondsVisible;
+            scene.add(bondGroup);
+            window.caCaOBonds = bondGroup;
+        }
+        
+        function createCaPolyhedron(scene) {
+            const vertices = [
+                [halfSize, 0, 0],
+                [halfSize, 0, latticeConstant],
+                [halfSize, latticeConstant, 0],
+                [halfSize, latticeConstant, latticeConstant],
+                [0, halfSize, 0],
+                [0, halfSize, latticeConstant],
+                [latticeConstant, halfSize, 0],
+                [latticeConstant, halfSize, latticeConstant],
+                [0, 0, halfSize],
+                [latticeConstant, 0, halfSize],
+                [0, latticeConstant, halfSize],
+                [latticeConstant, latticeConstant, halfSize]
+            ].map(v => [
+                v[0] - halfSize,
+                v[1] - halfSize,
+                v[2] - halfSize
+            ]);
+            
+            const edgeGeometry = new THREE.BufferGeometry();
+            const edgeVertices = [];
+            
+            const edges = [
+                [0, 1], [1, 3], [3, 2], [2, 0],
+                [4, 5], [5, 7], [7, 6], [6, 4],
+                [8, 9], [9, 11], [11, 10], [10, 8],
+                [0, 4], [1, 5], [2, 6], [3, 7],
+                [4, 8], [5, 9], [6, 10], [7, 11],
+                [8, 0], [9, 1], [10, 2], [11, 3]
+            ];
+            
+            edges.forEach(edge => {
+                const start = vertices[edge[0]];
+                const end = vertices[edge[1]];
+                edgeVertices.push(start[0], start[1], start[2], end[0], end[1], end[2]);
+            });
+            
+            edgeGeometry.setAttribute('position', new THREE.Float32BufferAttribute(edgeVertices, 3));
+            
+            const edgeMaterial = new THREE.LineBasicMaterial({
+                color: colors.caPolyhedronEdge,
+                linewidth: 2,
+                transparent: true,
+                opacity: 0.4
+            });
+            
+            window.caPolyhedron = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+            window.caPolyhedron.visible = caPolyhedronVisible;
+            scene.add(window.caPolyhedron);
+        }
+        
+        // ========== 视图3：[TiO₆]八面体连接图（增强版） ==========
+        let octScene, octCamera, octRenderer, octControls;
+        let octOctahedraVisible = true;
+        let octConnectionsVisible = true;
+        let octMultipleOctahedraVisible = false;
+        let octAllIonsVisible = false;
+        let octAutoRotate = true;
+        
+        function initOctahedronView() {
+            const container = document.getElementById('octahedron-canvas');
+            
+            octScene = new THREE.Scene();
+            // 修改为浅色背景
+            octScene.background = new THREE.Color(0xf5f5f5);
+            
+            octCamera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+            octCamera.position.set(12, 10, 12);
+            
+            octRenderer = new THREE.WebGLRenderer({ antialias: true });
+            octRenderer.setSize(container.clientWidth, container.clientHeight);
+            octRenderer.shadowMap.enabled = true;
+            octRenderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(octRenderer.domElement);
+            
+            octControls = new THREE.OrbitControls(octCamera, octRenderer.domElement);
+            octControls.autoRotate = octAutoRotate;
+            octControls.autoRotateSpeed = 1.0;
+            octControls.enableDamping = true;
+            octControls.dampingFactor = 0.05;
+            
+            // 光源
+            addLights(octScene);
+            
+            // 创建晶胞边界（透明）
+            createUnitCell(octScene, colors.unitCellEdge, 0.15);
+            
+            // 创建中心八面体
+            createCenterOctahedron(octScene);
+            
+            // 创建八面体连接网络
+            createOctahedronConnections(octScene);
+            
+            // 创建多个八面体（包含所有离子）- 增强版
+            createEnhancedMultipleOctahedra(octScene);
+            
+            // 设置控制按钮事件
+            setupOctahedronControls();
+            
+            // 动画循环
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                // 八面体脉动效果
+                if (window.octCenterOctahedronFaces && window.octCenterOctahedronFaces.visible) {
+                    window.octCenterOctahedronFaces.material.opacity = 0.2 + 0.1 * Math.sin(Date.now() * 0.001);
+                }
+                
+                // 连接网络脉动效果
+                if (window.octConnections && window.octConnections.visible) {
+                    window.octConnections.material.opacity = 0.3 + 0.2 * Math.sin(Date.now() * 0.001);
+                }
+                
+                octControls.update();
+                octRenderer.render(octScene, octCamera);
+            }
+            animate();
+            
+            // 窗口大小变化响应
+            window.addEventListener('resize', function() {
+                octCamera.aspect = container.clientWidth / container.clientHeight;
+                octCamera.updateProjectionMatrix();
+                octRenderer.setSize(container.clientWidth, container.clientHeight);
+            });
+        }
+        
+        // 创建中心八面体
+        function createCenterOctahedron(scene) {
+            const oxygenPositions = [
+                [0, 0, halfSize],
+                [0, 0, -halfSize],
+                [0, halfSize, 0],
+                [0, -halfSize, 0],
+                [halfSize, 0, 0],
+                [-halfSize, 0, 0]
+            ];
+            
+            // 八面体面
+            const faceGeometry = new THREE.BufferGeometry();
+            const faceVertices = [];
+            
+            const facesIndices = [
+                [0, 2, 4], [0, 4, 3], [0, 3, 5], [0, 5, 2],
+                [1, 4, 2], [1, 2, 5], [1, 5, 3], [1, 3, 4]
+            ];
+            
+            facesIndices.forEach(face => {
+                face.forEach(vertexIndex => {
+                    const vertex = oxygenPositions[vertexIndex];
+                    faceVertices.push(vertex[0], vertex[1], vertex[2]);
+                });
+            });
+            
+            faceGeometry.setAttribute('position', new THREE.Float32BufferAttribute(faceVertices, 3));
+            faceGeometry.computeVertexNormals();
+            
+            const faceMaterial = new THREE.MeshPhongMaterial({
+                color: colors.octahedronFace,
+                transparent: true,
+                opacity: 0.3,
+                side: THREE.DoubleSide,
+                shininess: 20
+            });
+            
+            window.octCenterOctahedronFaces = new THREE.Mesh(faceGeometry, faceMaterial);
+            window.octCenterOctahedronFaces.visible = octOctahedraVisible;
+            scene.add(window.octCenterOctahedronFaces);
+            
+            // 八面体边
+            const edgeGeometry = new THREE.BufferGeometry();
+            const edgeVertices = [];
+            
+            const edges = [
+                [0, 2], [0, 4], [0, 3], [0, 5],
+                [1, 2], [1, 4], [1, 3], [1, 5],
+                [2, 4], [4, 3], [3, 5], [5, 2]
+            ];
+            
+            edges.forEach(edge => {
+                const startIndex = edge[0];
+                const endIndex = edge[1];
+                
+                const startPos = new THREE.Vector3(
+                    oxygenPositions[startIndex][0],
+                    oxygenPositions[startIndex][1],
+                    oxygenPositions[startIndex][2]
+                );
+                const endPos = new THREE.Vector3(
+                    oxygenPositions[endIndex][0],
+                    oxygenPositions[endIndex][1],
+                    oxygenPositions[endIndex][2]
+                );
+                
+                const direction = new THREE.Vector3().subVectors(endPos, startPos).normalize();
+                const oxygenRadius = ionRadii.O * 0.18;
+                const adjustedStart = startPos.clone().add(direction.clone().multiplyScalar(oxygenRadius * 0.9));
+                const adjustedEnd = endPos.clone().sub(direction.clone().multiplyScalar(oxygenRadius * 0.9));
+                
+                edgeVertices.push(
+                    adjustedStart.x, adjustedStart.y, adjustedStart.z,
+                    adjustedEnd.x, adjustedEnd.y, adjustedEnd.z
+                );
+            });
+            
+            edgeGeometry.setAttribute('position', new THREE.Float32BufferAttribute(edgeVertices, 3));
+            
+            const edgeMaterial = new THREE.LineBasicMaterial({
+                color: colors.octahedronEdge,
+                linewidth: 2,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            window.octCenterOctahedronEdges = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+            window.octCenterOctahedronEdges.visible = octOctahedraVisible;
+            scene.add(window.octCenterOctahedronEdges);
+        }
+        
+        // 创建八面体连接网络
+        function createOctahedronConnections(scene) {
+            // 显示八面体如何通过共享顶点（O²⁻）连接
+            const connectionGeometry = new THREE.BufferGeometry();
+            const connectionVertices = [];
+            
+            // 中心八面体与相邻八面体的连接
+            // 每个O²⁻连接两个相邻的八面体
+            const connectionPoints = [
+                // z方向连接
+                { from: [0, 0, halfSize], to: [0, 0, halfSize + latticeConstant] },
+                { from: [0, 0, -halfSize], to: [0, 0, -halfSize - latticeConstant] },
+                
+                // y方向连接
+                { from: [0, halfSize, 0], to: [0, halfSize + latticeConstant, 0] },
+                { from: [0, -halfSize, 0], to: [0, -halfSize - latticeConstant, 0] },
+                
+                // x方向连接
+                { from: [halfSize, 0, 0], to: [halfSize + latticeConstant, 0, 0] },
+                { from: [-halfSize, 0, 0], to: [-halfSize - latticeConstant, 0, 0] }
+            ];
+            
+            connectionPoints.forEach(conn => {
+                const from = new THREE.Vector3(conn.from[0], conn.from[1], conn.from[2]);
+                const to = new THREE.Vector3(conn.to[0], conn.to[1], conn.to[2]);
+                
+                connectionVertices.push(
+                    from.x, from.y, from.z,
+                    to.x, to.y, to.z
+                );
+            });
+            
+            connectionGeometry.setAttribute('position', new THREE.Float32BufferAttribute(connectionVertices, 3));
+            
+            const connectionMaterial = new THREE.LineBasicMaterial({
+                color: colors.connectionNetwork,
+                linewidth: 1,
+                transparent: true,
+                opacity: 0.5
+            });
+            
+            window.octConnections = new THREE.LineSegments(connectionGeometry, connectionMaterial);
+            window.octConnections.visible = octConnectionsVisible;
+            scene.add(window.octConnections);
+        }
+        
+        // 创建增强的多八面体（包含所有离子）
+        function createEnhancedMultipleOctahedra(scene) {
+            const octahedronGroup = new THREE.Group();
+            
+            // 定义周围八面体的位置（相对于中心）
+            const surroundingPositions = [
+                [0, 0, latticeConstant],      // 上方
+                [0, 0, -latticeConstant],     // 下方
+                [0, latticeConstant, 0],      // 前方
+                [0, -latticeConstant, 0],     // 后方
+                [latticeConstant, 0, 0],      // 右方
+                [-latticeConstant, 0, 0]      // 左方
+            ];
+            
+            // 创建Ti⁴⁺离子几何体（周围Ti⁴⁺使用不同颜色）
+            const tiGeometry = new THREE.SphereGeometry(ionRadii.Ti * 0.25, 20, 20);
+            const tiCenterMaterial = new THREE.MeshPhongMaterial({ 
+                color: colors.Ti, 
+                shininess: 120,
+                transparent: true,
+                opacity: 0.9
+            });
+            const tiSurroundingMaterial = new THREE.MeshPhongMaterial({ 
+                color: colors.TiSurrounding, 
+                shininess: 120,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            // 创建O²⁻离子几何体
+            const oGeometry = new THREE.SphereGeometry(ionRadii.O * 0.15, 20, 20);
+            const oMaterial = new THREE.MeshPhongMaterial({ 
+                color: colors.O, 
+                shininess: 100,
+                transparent: true,
+                opacity: 0.7
+            });
+            
+            // 中心Ti⁴⁺离子
+            const centerTiIon = new THREE.Mesh(tiGeometry, tiCenterMaterial);
+            centerTiIon.position.set(0, 0, 0);
+            octahedronGroup.add(centerTiIon);
+            window.octCenterTiIon = centerTiIon;
+            
+            // 中心八面体的O²⁻离子
+            const centerOPositions = [
+                [0, 0, halfSize],
+                [0, 0, -halfSize],
+                [0, halfSize, 0],
+                [0, -halfSize, 0],
+                [halfSize, 0, 0],
+                [-halfSize, 0, 0]
+            ];
+            
+            centerOPositions.forEach(pos => {
+                const oIon = new THREE.Mesh(oGeometry, oMaterial);
+                oIon.position.set(pos[0], pos[1], pos[2]);
+                octahedronGroup.add(oIon);
+            });
+            
+            // 创建周围八面体（包含所有离子）
+            surroundingPositions.forEach(pos => {
+                const [x, y, z] = pos;
+                
+                // 周围Ti⁴⁺离子
+                const surroundingTiIon = new THREE.Mesh(tiGeometry, tiSurroundingMaterial);
+                surroundingTiIon.position.set(x, y, z);
+                octahedronGroup.add(surroundingTiIon);
+                
+                // 周围八面体的O²⁻顶点位置
+                const surroundingOPositions = [
+                    [x, y, z + halfSize],
+                    [x, y, z - halfSize],
+                    [x, y + halfSize, z],
+                    [x, y - halfSize, z],
+                    [x + halfSize, y, z],
+                    [x - halfSize, y, z]
+                ];
+                
+                // 添加周围八面体的O²⁻离子
+                surroundingOPositions.forEach(oPos => {
+                    // 检查这个O²⁻是否已经存在（可能是共享的）
+                    const oIon = new THREE.Mesh(oGeometry, oMaterial);
+                    oIon.position.set(oPos[0], oPos[1], oPos[2]);
+                    octahedronGroup.add(oIon);
+                });
+                
+                // 周围八面体的边
+                const edgeGeometry = new THREE.BufferGeometry();
+                const edgeVertices = [];
+                
+                const edges = [
+                    [0, 2], [0, 4], [0, 3], [0, 5],
+                    [1, 2], [1, 4], [1, 3], [1, 5],
+                    [2, 4], [4, 3], [3, 5], [5, 2]
+                ];
+                
+                edges.forEach(edge => {
+                    const start = surroundingOPositions[edge[0]];
+                    const end = surroundingOPositions[edge[1]];
+                    
+                    edgeVertices.push(
+                        start[0], start[1], start[2],
+                        end[0], end[1], end[2]
+                    );
+                });
+                
+                edgeGeometry.setAttribute('position', new THREE.Float32BufferAttribute(edgeVertices, 3));
+                
+                const edgeMaterial = new THREE.LineBasicMaterial({
+                    color: colors.octahedronEdge,
+                    linewidth: 1,
+                    transparent: true,
+                    opacity: 0.4
+                });
+                
+                const octahedronEdges = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+                octahedronGroup.add(octahedronEdges);
+            });
+            
+            // 设置所有离子和八面体的初始可见性
+            octahedronGroup.visible = octMultipleOctahedraVisible;
+            
+            // 为每个子对象添加标签，便于控制
+            octahedronGroup.children.forEach((child, index) => {
+                if (child.type === 'Mesh') {
+                    // 网格对象（离子）
+                    child.visible = octAllIonsVisible && octMultipleOctahedraVisible;
+                } else if (child.type === 'LineSegments') {
+                    // 线对象（八面体边）
+                    child.visible = octMultipleOctahedraVisible;
+                }
+            });
+            
+            scene.add(octahedronGroup);
+            window.octEnhancedOctahedra = octahedronGroup;
+            
+            // 保存Ti⁴⁺和O²⁻离子的引用，便于控制
+            window.octSurroundingTiIons = octahedronGroup.children.filter(child => 
+                child.type === 'Mesh' && child.material.color.getHex() === colors.TiSurrounding
+            );
+            window.octAllOxygenIons = octahedronGroup.children.filter(child => 
+                child.type === 'Mesh' && child.material.color.getHex() === colors.O
+            );
+        }
+        
+        // ========== 通用函数 ==========
+        function addLights(scene) {
+            const ambientLight = new THREE.AmbientLight(0x404060); // 环境光稍微调亮以适应浅色背景
+            scene.add(ambientLight);
+            
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.9);
+            directionalLight1.position.set(10, 20, 10);
+            scene.add(directionalLight1);
+            
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight2.position.set(-10, -10, -10);
+            scene.add(directionalLight2);
+        }
+        
+        function createUnitCell(scene, color, opacity) {
+            const vertices = [
+                [-halfSize, -halfSize, -halfSize],
+                [halfSize, -halfSize, -halfSize],
+                [halfSize, halfSize, -halfSize],
+                [-halfSize, halfSize, -halfSize],
+                [-halfSize, -halfSize, halfSize],
+                [halfSize, -halfSize, halfSize],
+                [halfSize, halfSize, halfSize],
+                [-halfSize, halfSize, halfSize]
+            ];
+            
+            const edgeGeometry = new THREE.BufferGeometry();
+            const edgeVertices = [];
+            
+            const edges = [
+                [0, 1], [1, 2], [2, 3], [3, 0],
+                [4, 5], [5, 6], [6, 7], [7, 4],
+                [0, 4], [1, 5], [2, 6], [3, 7]
+            ];
+            
+            edges.forEach(edge => {
+                const v1 = vertices[edge[0]];
+                const v2 = vertices[edge[1]];
+                
+                edgeVertices.push(
+                    v1[0], v1[1], v1[2],
+                    v2[0], v2[1], v2[2]
+                );
+            });
+            
+            edgeGeometry.setAttribute('position', new THREE.Float32BufferAttribute(edgeVertices, 3));
+            
+            const edgeMaterial = new THREE.LineBasicMaterial({
+                color: color,
+                transparent: true,
+                opacity: opacity,
+                linewidth: 1.5
+            });
+            
+            const unitCellEdges = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+            scene.add(unitCellEdges);
+        }
+        
+        // ========== 控制设置 ==========
+        function setupStandardControls() {
+            document.getElementById('std-toggle-octahedra').addEventListener('click', function() {
+                stdOctahedraVisible = !stdOctahedraVisible;
+                if (window.stdOctahedronFaces) window.stdOctahedronFaces.visible = stdOctahedraVisible;
+                if (window.stdOctahedronEdges) window.stdOctahedronEdges.visible = stdOctahedraVisible;
+                this.textContent = stdOctahedraVisible ? '隐藏[TiO₆]八面体' : '显示[TiO₆]八面体';
+            });
+            
+            document.getElementById('std-toggle-ti-o-bonds').addEventListener('click', function() {
+                stdTiOBondsVisible = !stdTiOBondsVisible;
+                if (window.stdTiOBonds) window.stdTiOBonds.visible = stdTiOBondsVisible;
+                this.textContent = stdTiOBondsVisible ? '隐藏Ti-O键' : '显示Ti-O键';
+            });
+            
+            document.getElementById('std-toggle-ca-ions').addEventListener('click', function() {
+                stdCaIonsVisible = !stdCaIonsVisible;
+                if (window.stdCaIons) {
+                    window.stdCaIons.forEach(caIon => {
+                        caIon.visible = stdCaIonsVisible;
+                    });
+                }
+                this.textContent = stdCaIonsVisible ? '隐藏Ca²⁺' : '显示Ca²⁺';
+            });
+        }
+        
+        function setupCaControls() {
+            document.getElementById('ca-toggle-ca-o-bonds').addEventListener('click', function() {
+                caCaOBondsVisible = !caCaOBondsVisible;
+                if (window.caCaOBonds) window.caCaOBonds.visible = caCaOBondsVisible;
+                this.textContent = caCaOBondsVisible ? '隐藏Ca-O键' : '显示Ca-O键';
+            });
+            
+            document.getElementById('ca-toggle-ca-polyhedron').addEventListener('click', function() {
+                caPolyhedronVisible = !caPolyhedronVisible;
+                if (window.caPolyhedron) window.caPolyhedron.visible = caPolyhedronVisible;
+                this.textContent = caPolyhedronVisible ? '隐藏Ca配位体' : '显示Ca配位体';
+            });
+            
+            document.getElementById('ca-toggle-ti-ions').addEventListener('click', function() {
+                caTiIonsVisible = !caTiIonsVisible;
+                if (window.caTiIons) {
+                    window.caTiIons.forEach(tiIon => {
+                        tiIon.visible = caTiIonsVisible;
+                    });
+                }
+                this.textContent = caTiIonsVisible ? '隐藏Ti⁴⁺' : '显示Ti⁴⁺';
+            });
+        }
+        
+        function setupOctahedronControls() {
+            document.getElementById('oct-toggle-octahedra').addEventListener('click', function() {
+                octOctahedraVisible = !octOctahedraVisible;
+                if (window.octCenterOctahedronFaces) window.octCenterOctahedronFaces.visible = octOctahedraVisible;
+                if (window.octCenterOctahedronEdges) window.octCenterOctahedronEdges.visible = octOctahedraVisible;
+                this.textContent = octOctahedraVisible ? '隐藏八面体' : '显示八面体';
+            });
+            
+            document.getElementById('oct-toggle-connections').addEventListener('click', function() {
+                octConnectionsVisible = !octConnectionsVisible;
+                if (window.octConnections) window.octConnections.visible = octConnectionsVisible;
+                this.textContent = octConnectionsVisible ? '隐藏连接网络' : '显示连接网络';
+            });
+            
+            document.getElementById('oct-toggle-multiple').addEventListener('click', function() {
+                octMultipleOctahedraVisible = !octMultipleOctahedraVisible;
+                if (window.octEnhancedOctahedra) {
+                    window.octEnhancedOctahedra.visible = octMultipleOctahedraVisible;
+                    
+                    // 控制多八面体内的离子显示
+                    if (window.octEnhancedOctahedra.children) {
+                        window.octEnhancedOctahedra.children.forEach(child => {
+                            if (child.type === 'Mesh') {
+                                // 网格对象（离子）
+                                child.visible = octAllIonsVisible && octMultipleOctahedraVisible;
+                            } else if (child.type === 'LineSegments') {
+                                // 线对象（八面体边）
+                                child.visible = octMultipleOctahedraVisible;
+                            }
+                        });
+                    }
+                }
+                this.textContent = octMultipleOctahedraVisible ? '隐藏多八面体' : '显示多八面体';
+            });
+            
+            document.getElementById('oct-toggle-all-ions').addEventListener('click', function() {
+                octAllIonsVisible = !octAllIonsVisible;
+                
+                // 控制多八面体内的所有离子显示
+                if (window.octEnhancedOctahedra && window.octEnhancedOctahedra.children) {
+                    window.octEnhancedOctahedra.children.forEach(child => {
+                        if (child.type === 'Mesh') {
+                            // 网格对象（离子）
+                            child.visible = octAllIonsVisible && octMultipleOctahedraVisible;
+                        }
+                    });
+                }
+                
+                this.textContent = octAllIonsVisible ? '隐藏全部离子' : '显示全部离子';
+            });
+        }
+        
+        // ========== 初始化 ==========
+        window.addEventListener('DOMContentLoaded', function() {
+            initStandardView();
+            initCaView();
+            initOctahedronView();
+        });
+    </script>
+</body>
+</html>
